@@ -96,14 +96,14 @@
       cursor: pointer;
       margin: 0 0 20px;
     }
-    .btn-item1 { background-color: #e53935; }
+    .btn-item1 { background-color: #fb8c00 }
     .btn-item4 { background-color: #8e24aa; }
     .btn-item5 { background-color: #3949ab; }
     .btn-item6 { background-color: #00897b; }
     .btn-item7 { background-color: #fdd835; color: #000; }
     .btn-item8 { background-color: #fb8c00; }
     /* 라벨 텍스트 색상 매핑 */
-    .label-item1-3 { color: #e53935; }
+    .label-item1-3 { color: #fb8c00; }
     .label-item4   { color: #8e24aa; }
     .label-item5   { color: #3949ab; }
     .label-item6   { color: #00897b; }
@@ -160,7 +160,7 @@
       <select id="select-항목1" name="오버로드 프로텍트 (정상범위)" disabled>
         <option value="">선택</option><option value="OK">OK</option><option value="NG">NG</option>
       </select>
-      <button type="button" class="qr-btn btn-item1" onclick="scanQRCode('항목1')">QR 코드 스캔</button>
+     
 
       <label class="label-item1-3">발란스 실린더 (정상범위)</label>
       <select id="select-항목2" name="발란스 실린더 (정상범위)" disabled>
@@ -171,6 +171,8 @@
       <select id="select-항목3" name="클러치 브레이크 (정상범위)" disabled>
         <option value="">선택</option><option value="OK">OK</option><option value="NG">NG</option>
       </select>
+
+ <button type="button" class="qr-btn btn-item1" onclick="scanQRCode('항목1')">QR 코드 스캔</button>
 
       <label class="label-item4">모터 (이상음)</label>
       <select id="select-항목4" name="모터 (이상음)" disabled>
@@ -210,7 +212,7 @@
       <label for="comment">비고</label>
       <textarea id="comment" name="비고" placeholder="비고를 입력하세요"></textarea>
 
-      <input type="submit" value="제출" />
+      <input type="submit" value="제출 (1회만 클릭, 완료시까지 대기)" />
     </form>
   </div>
 
