@@ -47,7 +47,7 @@
       border-radius: 8px; overflow: hidden;
       padding: 0;
     }
-    #preview { width:300px; height:200px; }
+    #preview { width:300px; height:300px; }
     #closePreview {
       margin-top:8px; padding:8px 16px;
       font-size:12px; border:1px solid #333;
@@ -100,7 +100,7 @@
         <option value="49호기">49호기 심팩300톤</option>
       </select>
 
-   <!-- 이하 점검항목 -->
+        <!-- 이하 점검항목 -->
   <label>오버로드 프로텍트 (정상범위)</label>
   <select id="select-항목1" name="오버로드 프로텍트 (정상범위)" disabled>
     <option value="">선택</option><option value="OK">OK</option><option value="NG">NG</option>
@@ -157,7 +157,7 @@
   <label for="comment">비고</label>
   <textarea id="comment" name="비고" placeholder="비고를 입력하세요"></textarea>
 
-  <input type="submit" value="제출 (1회클릭)" />
+  <input type="submit" value="제출" />
 </form>
   </div>
 
@@ -170,76 +170,57 @@
   </div>
 
   <script>
-  // 페이지 로드 시 오늘 날짜 자동 세팅
-  window.addEventListener('DOMContentLoaded', () => {
-    document.getElementById('date').value = new Date().toISOString().slice(0,10);
-  });
-
-  // 1) targetId 별 점검항목 이름 매핑
-  const itemNames = {
-    '항목1': '오버로드 프로텍트 (정상범위)',
-    '항목2': '발란스 실린더 (정상범위)',
-    '항목3': '클러치 브레이크 (정상범위)',
-    '항목4': '모터 (이상음)',
-    '항목5': '클러치  (작동상태)',
-    '항목6': '안전장치 (센서,양수조작버튼)',
-    '항목7': '오일러의 급유 (적정량, 흐름상태)',
-    '항목8': '피치세팅장치 (공급상태)',
-    '항목9': '크레인,사다리등 사용시 안전모착용'
-  };
-
-  // 2) QR 스캔 / 정지 함수
-  let html5QrCodeInstance, currentScanTarget;
-  function scanQRCode(targetId) {
-    currentScanTarget = targetId;
-    document.getElementById('preview-wrapper').style.display = 'flex';
-    html5QrCodeInstance = new Html5Qrcode('preview');
-    html5QrCodeInstance.start(
-      { facingMode:'environment' },
-      { fps:10, qrbox:{width:300,height:300} },
-      decodedText => {
-        const expect = itemNames[targetId];
-        if (decodedText === expect) {
-          document.getElementById(`select-${targetId}`).disabled = false;
-          alert(`스캔 성공: "${expect}"`);
-        } else {
-          alert(`스캔 불일치\n읽음: ${decodedText}\n기대: ${expect}`);
-        }
-        stopQrScanner();
-      },
-      err => console.warn('QR 인식 실패:', err)
-    ).catch(console.error);
-  }
-  function stopQrScanner() {
-    document.getElementById('preview-wrapper').style.display = 'none';
-    if (html5QrCodeInstance) {
-      html5QrCodeInstance.stop()
-        .then(() => html5QrCodeInstance.clear())
-        .catch(console.error);
-    }
-  }
-  document.getElementById('closePreview')
-    .addEventListener('click', stopQrScanner);
-
-  // 3) 폼 제출 처리 (fetch 이용)
-  document.getElementById('checkForm')
-    .addEventListener('submit', function(e) {
-      e.preventDefault();
-      const body = new URLSearchParams(new FormData(this));
-      fetch('https://script.google.com/macros/s/AKfycby4s4Vf7eATvNSzkvbjgg9Ar65P_9y0kgVWn8ELm6_tzkcywbVqmkP5lWNFxYOcsa6gJA/exec', {
-        method: 'POST',
-        body
-      })
-      .then(r => r.text())
-      .then(_ => {
-        alert('제출 완료');
-        this.reset();
-      })
-      .catch(err => {
-        alert('제출 실패: ' + err);
-      });
+    // 페이지 로드 시 오늘 날짜 자동 세팅
+    window.addEventListener('DOMContentLoaded', () => {
+      document.getElementById('date').value = new Date().toISOString().slice(0,10);
     });
-</script>
 
+    // QR 스캔 / 정지 함수 (첨부 html_QR_function.txt 그대로)
+    let html5QrCodeInstance, currentScanTarget;
+    function scanQRCode(targetId) {
+      currentScanTarget = targetId;
+      document.getElementById('preview-wrapper').style.display = 'flex';
+      html5QrCodeInstance = new Html5Qrcode('preview');
+      html5QrCodeInstance.start(
+        { facingMode:'environment' },
+        { fps:10, qrbox:{width:300,height:300} },
+        decodedText => {
+          const equipNo = document.getElementById('equipmentInput').value.trim();
+          const expected = `${equipNo}-${targetId.replace('항목','')}`;
+          if (decodedText === expected) {
+            document.getElementById(`select-${targetId}`).disabled = false;
+            alert(`QR코드 일치: ${decodedText}`);
+          } else {
+            alert(`불일치\n읽음: ${decodedText}\n기대: ${expected}`);
+          }
+          stopQrScanner();
+        },
+        err => console.warn('QR 인식 실패:', err)
+      ).catch(console.error);
+    }
+    function stopQrScanner() {
+      document.getElementById('preview-wrapper').style.display = 'none';
+      if (html5QrCodeInstance) {
+        html5QrCodeInstance.stop()
+          .then(() => html5QrCodeInstance.clear())
+          .catch(console.error);
+      }
+    }
+    document.getElementById('closePreview')
+      .addEventListener('click', stopQrScanner);
+
+    // 폼 제출 처리 (Apps Script Web App)
+    document.getElementById('checkForm')
+      .addEventListener('submit', function(e) {
+        e.preventDefault();
+        const body = new URLSearchParams(new FormData(this));
+        fetch('https://script.google.com/macros/s/AKfycbzCPVPnQOuK9ocCvnHwKrIbAhC_tb_hxkaE_GibM51jnRXmX2509jBPZE-Ydz0flw5Y/exec', {
+          method:'POST', body
+        })
+        .then(r=>r.text())
+        .then(_=>{ alert('제출 완료'); this.reset(); })
+        .catch(err=>alert('제출 실패: '+err));
+      });
+  </script>
 </body>
 </html>
