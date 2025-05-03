@@ -157,7 +157,7 @@
   <label for="comment">비고</label>
   <textarea id="comment" name="비고" placeholder="비고를 입력하세요"></textarea>
 
-  <input type="submit" value="제출 (1회클릭)" />
+  <input type="submit" value="제출 (1회 클릭)" />
 </form>
   </div>
 
@@ -170,12 +170,12 @@
   </div>
 
   <script>
-    // 페이지 로드 시 오늘 날짜 자동 세팅
-    window.addEventListener('DOMContentLoaded', () => {
-      document.getElementById('date').value = new Date().toISOString().slice(0,10);
-    });
+  // 페이지 로드 시 오늘 날짜 자동 세팅
+  window.addEventListener('DOMContentLoaded', () => {
+    document.getElementById('date').value = new Date().toISOString().slice(0,10);
+  });
 
-     // 1) targetId 별 점검항목 이름 매핑
+  // 1) targetId 별 점검항목 이름 매핑
   const itemNames = {
     '항목1': '오버로드 프로텍트 (정상범위)',
     '항목2': '발란스 실린더 (정상범위)',
@@ -188,7 +188,7 @@
     '항목9': '크레인,사다리등 사용시 안전모착용'
   };
 
-  // 2) QR 스캔 / 정지 함수 수정본
+  // 2) QR 스캔 / 정지 함수
   let html5QrCodeInstance, currentScanTarget;
   function scanQRCode(targetId) {
     currentScanTarget = targetId;
@@ -200,7 +200,6 @@
       decodedText => {
         const expect = itemNames[targetId];
         if (decodedText === expect) {
-          // 일치할 때만 OK/NG 활성화
           document.getElementById(`select-${targetId}`).disabled = false;
           alert(`스캔 성공: "${expect}"`);
         } else {
@@ -221,6 +220,26 @@
   }
   document.getElementById('closePreview')
     .addEventListener('click', stopQrScanner);
+
+  // 3) 폼 제출 처리 (fetch 이용)
+  document.getElementById('checkForm')
+    .addEventListener('submit', function(e) {
+      e.preventDefault();
+      const body = new URLSearchParams(new FormData(this));
+      fetch('https://script.google.com/macros/s/AKfycby4s4Vf7eATvNSzkvbjgg9Ar65P_9y0kgVWn8ELm6_tzkcywbVqmkP5lWNFxYOcsa6gJA/exec', {
+        method: 'POST',
+        body
+      })
+      .then(r => r.text())
+      .then(_ => {
+        alert('제출 완료');
+        this.reset();
+      })
+      .catch(err => {
+        alert('제출 실패: ' + err);
+      });
+    });
 </script>
+
 </body>
 </html>
