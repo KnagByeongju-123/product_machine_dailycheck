@@ -238,6 +238,12 @@ decodedText => {
   if (decodedText === expected) {
     // 일치하면 select 활성화
     document.getElementById(`select-${targetId}`).disabled = false;
+
+ // — 추가! — 1번 스캔 시 2,3번도 함께 활성화
+if (targetId === "항목1") {
+      document.getElementById("select-항목2").disabled = false;
+      document.getElementById("select-항목3").disabled = false;
+}
     alert(`QR코드 일치: ${decodedText}`);
   } else {
     alert(`불일치\n읽음: ${decodedText}\n기대: ${expected}`);
