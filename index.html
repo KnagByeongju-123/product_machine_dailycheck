@@ -35,24 +35,57 @@
       font-size: 20.28px;
       display: block; margin-bottom: 8px;
     }
+  </style>
+  <!-- QR카메라 스타일 (html_QR소스_닫기버튼.txt 기준) -->
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      font-size: 18px;
+      padding: 20px;
+      max-width: 600px;
+      margin: auto;
+      background-color: #f9f9f9;
+    }
+    label {
+      display: block;
+      margin-top: 14px;
+      font-weight: bold;
+    }
+    input, select, textarea, button {
+      width: 100%;
+      padding: 10px;
+      margin-top: 6px;
+      box-sizing: border-box;
+      font-size: 16px;
+    }
+    button {
+      background-color: #1976d2;
+      color: white;
+      border: none;
+      cursor: pointer;
+    }
     #preview-wrapper {
-      display: none; position: fixed;
-      top:0; left:0; width:100vw; height:100vh;
-      background: rgba(0,0,0,0.8);
-      align-items: center; justify-content: center;
-      z-index:1000;
+      position: fixed;
+      inset: 0;
+      background-color: rgba(0, 0, 0, 0.9);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      z-index: 9999;
     }
-    #preview-container {
-      background: transparent;
-      border-radius: 8px; overflow: hidden;
-      padding: 0;
-    }
-    #preview { width:300px; height:300px; }
+    #preview-wrapper > div { position: relative; }
+    #preview { width: 300px; height: 300px; background: #fff; }
     #closePreview {
-      margin-top:8px; padding:8px 16px;
-      font-size:12px; border:1px solid #333;
-      background:#fff; border-radius:6px;
-      cursor:pointer;
+      position: absolute;
+      top: -45px;
+      left: 0;
+      padding: 8px 12px;
+      background-color: red;
+      color: white;
+      border: none;
+      font-size: 14px;
+      cursor: pointer;
+      z-index: 10000;
     }
   </style>
 </head>
@@ -161,11 +194,11 @@
     </form>
   </div>
 
-  <!-- QR 모달 -->
+  <!-- QR 스캐너 미리보기 (html_QR소스_닫기버튼.txt 기준) -->
   <div id="preview-wrapper">
-    <div id="preview-container">
-      <div id="preview"></div>
+    <div>
       <button id="closePreview">닫기</button>
+      <div id="preview"></div>
     </div>
   </div>
 
@@ -175,44 +208,63 @@
       document.getElementById('date').value = new Date().toISOString().slice(0,10);
     });
 
-    // QR 스캔 및 정지 함수 (html_QR_function.txt 내용으로 완전 교체)
-    let html5QrCodeInstance, currentScanTarget;
-    function scanQRCode(targetId) {
-      currentScanTarget = targetId;
-      const previewWrapper = document.getElementById("preview-wrapper");
-      const preview = document.getElementById("preview");
+    // QR 스캔 및 정지 함수 (html_QR소스_닫기버튼.txt 기준)
+    let html5QrCodeInstance = null;
 
-      previewWrapper.style.display = "flex";
+    function scanQRCode(targetId) {
+      const wrapper = document.getElementById("preview-wrapper");
+      const preview = document.getElementById("preview");
+      preview.innerHTML = "";
+      wrapper.style.display = "flex";
+
+      if (html5QrCodeInstance) {
+        html5QrCodeInstance.stop().catch(()=>{});
+        html5QrCodeInstance.clear().catch(()=>{});
+        html5QrCodeInstance = null;
+      }
+
       html5QrCodeInstance = new Html5Qrcode("preview");
-      html5QrCodeInstance.start({ facingMode: "environment" }, {
-        fps: 10,
-        qrbox: { width: 300, height: 300 }
-      }, (decodedText) => {
-        const 설비번호 = document.getElementById("equipmentInput").value.trim();
-        const expectedCode = `${설비번호}-${targetId.replace('항목', '')}`;
-        if (decodedText === expectedCode) {
-          document.getElementById(`select-${targetId}`).disabled = false;
-          alert(`QR코드 일치: ${decodedText}`);
-        } else {
-          alert(`일치하지 않음\n읽음: ${decodedText}\n기대: ${expectedCode}`);
-        }
-        stopQrScanner();
-      }, (err) => {
-        console.warn("QR 인식 실패:", err);
+      html5QrCodeInstance.start(
+        { facingMode: "environment" },
+        { fps: 10, qrbox: { width: 280, height: 280 } },
+decodedText => {
+  // 1) 설비번호 가져오기
+  const 설비번호 = document.getElementById("equipmentInput").value.trim();
+  // 2) 타겟 항목 번호만 추출 (예: '항목4' → '4')
+  const 항목번호 = targetId.replace("항목", "");
+  // 3) 기대 QR 문자열
+  const expected = `${설비번호}-${항목번호}`;
+
+  if (decodedText === expected) {
+    // 일치하면 select 활성화
+    document.getElementById(`select-${targetId}`).disabled = false;
+    alert(`QR코드 일치: ${decodedText}`);
+  } else {
+    alert(`불일치\n읽음: ${decodedText}\n기대: ${expected}`);
+  }
+
+  stopQrScanner();
+},
+        err => console.warn("QR 인식 실패:", err)
+      ).catch(err => {
+        alert("카메라 초기화 실패: 권한 확인 또는 다른 앱 사용 중인지 확인하세요.");
+        console.error(err);
+        wrapper.style.display = "none";
       });
     }
-
-    document.getElementById("closePreview").addEventListener("click", stopQrScanner);
 
     function stopQrScanner() {
       const wrapper = document.getElementById("preview-wrapper");
       wrapper.style.display = "none";
       if (html5QrCodeInstance) {
-        html5QrCodeInstance.stop().then(() => {
-          html5QrCodeInstance.clear();
-        }).catch(console.error);
+        html5QrCodeInstance.stop()
+          .then(() => html5QrCodeInstance.clear())
+          .then(() => { html5QrCodeInstance = null; })
+          .catch(console.error);
       }
     }
+
+    document.getElementById("closePreview").addEventListener("click", stopQrScanner);
 
     // 폼 제출 처리 (Apps Script Web App)
     document.getElementById('checkForm')
