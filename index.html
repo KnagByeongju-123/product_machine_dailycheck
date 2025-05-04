@@ -160,7 +160,7 @@
       <select id="select-항목1" name="오버로드 프로텍트 (정상범위)" disabled>
         <option value="">선택</option><option value="OK">OK</option><option value="NG">NG</option>
       </select>
-     
+      <button type="button" class="qr-btn btn-item1" onclick="scanQRCode('항목1')">QR 코드 스캔</button>
 
       <label class="label-item1-3">발란스 실린더 (정상범위)</label>
       <select id="select-항목2" name="발란스 실린더 (정상범위)" disabled>
@@ -171,8 +171,6 @@
       <select id="select-항목3" name="클러치 브레이크 (정상범위)" disabled>
         <option value="">선택</option><option value="OK">OK</option><option value="NG">NG</option>
       </select>
-
- <button type="button" class="qr-btn btn-item1" onclick="scanQRCode('항목1')">QR 코드 스캔</button>
 
       <label class="label-item4">모터 (이상음)</label>
       <select id="select-항목4" name="모터 (이상음)" disabled>
@@ -255,10 +253,14 @@
           const expected = `${설비번호}-${항목번호}`;
 
           if (decodedText === expected) {
-            document.getElementById(`select-${targetId}`).disabled = false;
+            const sel = document.getElementById(`select-${targetId}`);
+            sel.disabled = false;
+            sel.value = 'OK';
             if (targetId === "항목1") {
-              document.getElementById("select-항목2").disabled = false;
-              document.getElementById("select-항목3").disabled = false;
+              const sel2 = document.getElementById("select-항목2");
+              const sel3 = document.getElementById("select-항목3");
+              sel2.disabled = false; sel2.value = 'OK';
+              sel3.disabled = false; sel3.value = 'OK';
             }
             alert(`QR코드 일치: ${decodedText}`);
           } else {
