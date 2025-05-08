@@ -248,9 +248,9 @@
         { facingMode: "environment" },
         { fps: 10, qrbox: { width: 280, height: 280 } },
         decodedText => {
-          const 설비번호 = document.getElementById("equipmentInput").value.trim();
+      
           const 항목번호 = targetId.replace("항목", "");
-          const expected = `${설비번호}-${항목번호}`;
+      
 
           if (decodedText === expected) {
             const sel = document.getElementById(`select-${targetId}`);
