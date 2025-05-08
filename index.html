@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>설비점검체크시트</title>
+  <title>설비점검 체크시트</title>
   <script src="https://unpkg.com/html5-qrcode"></script>
   <style>
     body {
@@ -35,9 +35,7 @@
       font-size: 20.28px;
       display: block; margin-bottom: 8px;
     }
-  </style>
-  <!-- QR카메라 스타일 및 컬러 매핑 -->
-  <style>
+    /* QR 카메라 스타일 및 컬러 매핑 */
     body {
       font-family: Arial, sans-serif;
       font-size: 18px;
@@ -71,20 +69,15 @@
       z-index: 9999;
     }
     #preview-wrapper > div { position: relative; }
-    #preview { width: 300px; height: 300px; background: #fff; }
+    #preview { width: 300px; height: 300px; }
     #closePreview {
       position: absolute;
-      top: -45px;
-      left: 0;
+      top: -40px; left: 0;
       padding: 8px 12px;
-      background-color: red;
-      color: white;
-      border: none;
+      background: red; color: #fff;
+      border: none; cursor: pointer;
       font-size: 14px;
-      cursor: pointer;
-      z-index: 10000;
     }
-    /* QR 버튼 기본 스타일 */
     .qr-btn {
       width: 100%;
       padding: 10px;
@@ -102,7 +95,6 @@
     .btn-item6 { background-color: #00897b; }
     .btn-item7 { background-color: #fdd835; color: #000; }
     .btn-item8 { background-color: #fb8c00; }
-    /* 라벨 텍스트 색상 매핑 */
     .label-item1-3 { color: #fb8c00; }
     .label-item4   { color: #8e24aa; }
     .label-item5   { color: #3949ab; }
@@ -150,8 +142,8 @@
         <option value="43호기 화일800톤">43호기 화일800톤</option>
         <option value="45호기 심팩300톤">45호기 심팩300톤</option>
         <option value="46호기 심팩300톤">46호기 심팩300톤</option>
-        <option value="47호기 심팩300톤">47호기 심팩300톤</option>
-        <option value="48호기 심팩300톤">48호기 심팩300톤</option>
+        <option value="47호기 심팩300톤">47호기 심팩300톤</option
+        ><option value="48호기 심팩300톤">48호기 심팩300톤</option>
         <option value="49호기 심팩300톤">49호기 심팩300톤</option>
       </select>
 
@@ -214,7 +206,6 @@
     </form>
   </div>
 
-  <!-- QR 스캐너 미리보기 -->
   <div id="preview-wrapper">
     <div>
       <button id="closePreview">닫기</button>
@@ -232,62 +223,43 @@
     let html5QrCodeInstance = null;
 
     function scanQRCode(targetId) {
-      const wrapper = document.getElementById("preview-wrapper");
-      const preview = document.getElementById("preview");
-      preview.innerHTML = "";
-      wrapper.style.display = "flex";
-
-      if (html5QrCodeInstance) {
-        html5QrCodeInstance.stop().catch(()=>{});
-        html5QrCodeInstance.clear().catch(()=>{});
-        html5QrCodeInstance = null;
-      }
-
-      html5QrCodeInstance = new Html5Qrcode("preview");
+      document.getElementById('preview-wrapper').style.display = 'flex';
+      html5QrCodeInstance = new Html5Qrcode('preview');
       html5QrCodeInstance.start(
-        { facingMode: "environment" },
-        { fps: 10, qrbox: { width: 280, height: 280 } },
+        { facingMode: 'environment' },
+        { fps: 10, qrbox: { width: 300, height: 300 } },
         decodedText => {
-   
-          const 항목번호 = targetId.replace("항목", "");
-  
-
-          if (decodedText === expected) {
+          const scannedNo = decodedText.split('-').pop().trim();
+          const 항목번호 = targetId.replace('항목','');
+          if (scannedNo === 항목번호) {
             const sel = document.getElementById(`select-${targetId}`);
             sel.disabled = false;
             sel.value = 'OK';
-            if (targetId === "항목1") {
-              const sel2 = document.getElementById("select-항목2");
-              const sel3 = document.getElementById("select-항목3");
-              sel2.disabled = false; sel2.value = 'OK';
-              sel3.disabled = false; sel3.value = 'OK';
+            if (targetId === '항목1') {
+              ['항목2','항목3'].forEach(id => {
+                const s = document.getElementById(`select-${id}`);
+                s.disabled = false; s.value = 'OK';
+              });
             }
-            alert(`QR코드 일치: ${decodedText}`);
+            alert(`항목 ${항목번호} 검사 완료`);
           } else {
-            alert(`불일치\n읽음: ${decodedText}\n기대: ${expected}`);
+            alert(`불일치: 스캔=${scannedNo}, 대상=${항목번호}`);
           }
           stopQrScanner();
         },
-        err => console.warn("QR 인식 실패:", err)
-      ).catch(err => {
-        alert("카메라 초기화 실패: 권한 확인 또는 다른 앱 사용 중인지 확인하세요.");
-        console.error(err);
-        wrapper.style.display = "none";
-      });
+        err => console.warn('QR 인식 실패:', err)
+      ).catch(console.error);
     }
 
     function stopQrScanner() {
-      const wrapper = document.getElementById("preview-wrapper");
-      wrapper.style.display = "none";
+      document.getElementById('preview-wrapper').style.display = 'none';
       if (html5QrCodeInstance) {
         html5QrCodeInstance.stop()
           .then(() => html5QrCodeInstance.clear())
-          .then(() => { html5QrCodeInstance = null; })
           .catch(console.error);
       }
     }
-
-    document.getElementById("closePreview").addEventListener("click", stopQrScanner);
+    document.getElementById('closePreview').addEventListener('click', stopQrScanner);
 
     // 폼 제출 처리 (Apps Script Web App)
     document.getElementById('checkForm')
