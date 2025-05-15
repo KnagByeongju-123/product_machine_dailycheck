@@ -214,10 +214,14 @@
   </div>
 
   <script>
-    // 페이지 로드 시 오늘 날짜 자동 세팅
     window.addEventListener('DOMContentLoaded', () => {
-      document.getElementById('date').value = new Date().toISOString().slice(0,10);
-    });
+    const dateInput = document.getElementById('date');
+    const now       = new Date();
+    // UTC 시간(ms) + 9시간 → KST
+    const utcMs     = now.getTime() + (now.getTimezoneOffset() * 60000);
+    const kst       = new Date(utcMs + 9 * 3600 * 1000);
+    dateInput.value = kst.toISOString().split('T')[0];
+  });
 
     // QR 스캔 및 정지 함수
     let html5QrCodeInstance = null;
